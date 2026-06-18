@@ -139,7 +139,9 @@ struct config13_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -153,7 +155,7 @@ struct config13_dense : nnet::dense_config {
     typedef w13_t weight_t;
 
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w13);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w13);
     static constexpr bias_t biases = b13;
 
     template<class x_T, class y_T>
@@ -203,7 +205,9 @@ struct config16_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -217,7 +221,7 @@ struct config16_dense : nnet::dense_config {
     typedef w16_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w16);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w16);
     static constexpr bias_t biases = b16; 
 
     template<class x_T, class y_T>
@@ -266,7 +270,9 @@ struct config19_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -280,7 +286,7 @@ struct config19_dense : nnet::dense_config {
     typedef w19_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w19);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w19);
     static constexpr bias_t biases = b19;
 
     template<class x_T, class y_T>
@@ -406,7 +412,9 @@ struct config26_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -420,7 +428,7 @@ struct config26_dense : nnet::dense_config {
     typedef w26_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w26);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w26);
     static constexpr bias_t biases = b26;
 
     template<class x_T, class y_T>
@@ -481,7 +489,9 @@ struct config76_mult : nnet::dense_config {
     static const unsigned rf_pad = 0;
     static const unsigned bf_pad = 0;
 
-    static const unsigned reuse_factor = n_in;
+    static const unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static const unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static const unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
     static const unsigned block_factor_rounded = block_factor + bf_pad;
@@ -515,7 +525,7 @@ struct config76 : nnet::conv1d_config {
     static const unsigned stride_width = 1;
     static const unsigned dilation = 1;
 
-    static const unsigned reuse_factor = 4;
+    static const unsigned reuse_factor = 1;
     static const unsigned parallelization_factor = 1;
     static const bool store_weights_in_bram = false;
 
@@ -526,7 +536,8 @@ struct config76 : nnet::conv1d_config {
     typedef w76_t weight_t;
     typedef config76_mult mult_config;
 
-    [[intel::fpga_memory, intel::numbanks(n_chan), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w76;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_chan, reuse_factor);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w76;
     static constexpr bias_t biases = b76;
 };
 
@@ -545,7 +556,9 @@ struct config77_mult : nnet::dense_config {
     static const unsigned rf_pad = 0;
     static const unsigned bf_pad = 0;
 
-    static const unsigned reuse_factor = n_in;
+    static const unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static const unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static const unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
     static const unsigned block_factor_rounded = block_factor + bf_pad;
@@ -579,7 +592,7 @@ struct config77 : nnet::conv1d_config {
     static const unsigned stride_width = 1;
     static const unsigned dilation = 1;
 
-    static const unsigned reuse_factor = 4;
+    static const unsigned reuse_factor = 1;
     static const unsigned parallelization_factor = 1;
     static const bool store_weights_in_bram = false;
 
@@ -590,7 +603,8 @@ struct config77 : nnet::conv1d_config {
     typedef w77_t weight_t;
     typedef config77_mult mult_config;
 
-    [[intel::fpga_memory, intel::numbanks(n_chan), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w77;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_chan, reuse_factor);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w77;
     static constexpr bias_t biases = b77;
 };
 
@@ -632,7 +646,9 @@ struct config44_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -646,7 +662,7 @@ struct config44_dense : nnet::dense_config {
     typedef w44_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w44);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w44);
     static constexpr bias_t biases = b44;
 
     template<class x_T, class y_T>
@@ -692,7 +708,9 @@ struct config47_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -706,7 +724,7 @@ struct config47_dense : nnet::dense_config {
     typedef w47_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w47);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w47);
     static constexpr bias_t biases = b47;
 
     template<class x_T, class y_T>
@@ -752,7 +770,9 @@ struct config50_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -766,7 +786,7 @@ struct config50_dense : nnet::dense_config {
     typedef w50_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w50);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w50);
     static constexpr bias_t biases = b50;
 
     template<class x_T, class y_T>
@@ -888,7 +908,9 @@ struct config57_dense : nnet::dense_config {
     static constexpr unsigned rf_pad = 0;
     static constexpr unsigned bf_pad = 0;
 
-    static constexpr unsigned reuse_factor = n_in;
+    static constexpr unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static constexpr unsigned compressed_block_factor = DIV_ROUNDUP(n_nonzeros, reuse_factor);
     static constexpr unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static constexpr unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
@@ -902,7 +924,7 @@ struct config57_dense : nnet::dense_config {
     typedef w57_t weight_t;
     
     static constexpr bool conv = true;
-    [[intel::fpga_memory, intel::numbanks(n_in), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w57);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = tpose<weight_t,32,32>(w57);
     static constexpr bias_t biases = b57;
 
     template<class x_T, class y_T>
@@ -963,7 +985,9 @@ struct config78_mult : nnet::dense_config {
     static const unsigned rf_pad = 0;
     static const unsigned bf_pad = 0;
 
-    static const unsigned reuse_factor = n_in;
+    static const unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static const unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static const unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
     static const unsigned block_factor_rounded = block_factor + bf_pad;
@@ -997,7 +1021,7 @@ struct config78 : nnet::conv1d_config {
     static const unsigned stride_width = 1;
     static const unsigned dilation = 1;
 
-    static const unsigned reuse_factor = 4;
+    static const unsigned reuse_factor = 1;
     static const unsigned parallelization_factor = 1;
     static const bool store_weights_in_bram = false;
 
@@ -1008,7 +1032,8 @@ struct config78 : nnet::conv1d_config {
     typedef w78_t weight_t;
     typedef config78_mult mult_config;
 
-    [[intel::fpga_memory, intel::numbanks(n_chan), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w78;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_chan, reuse_factor);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w78;
     static constexpr bias_t biases = b78;
 };
 
@@ -1027,7 +1052,9 @@ struct config79_mult : nnet::dense_config {
     static const unsigned rf_pad = 0;
     static const unsigned bf_pad = 0;
 
-    static const unsigned reuse_factor = n_in;
+    static const unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static const unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static const unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
     static const unsigned block_factor_rounded = block_factor + bf_pad;
@@ -1061,7 +1088,7 @@ struct config79 : nnet::conv1d_config {
     static const unsigned stride_width = 1;
     static const unsigned dilation = 1;
 
-    static const unsigned reuse_factor = 4;
+    static const unsigned reuse_factor = 1;
     static const unsigned parallelization_factor = 1;
     static const bool store_weights_in_bram = false;
 
@@ -1072,7 +1099,8 @@ struct config79 : nnet::conv1d_config {
     typedef w79_t weight_t;
     typedef config79_mult mult_config;
 
-    [[intel::fpga_memory, intel::numbanks(n_chan), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w79;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_chan, reuse_factor);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w79;
     static constexpr bias_t biases = b79;
 };
 
@@ -1110,7 +1138,9 @@ struct config80_mult : nnet::dense_config {
     static const unsigned rf_pad = 0;
     static const unsigned bf_pad = 0;
 
-    static const unsigned reuse_factor = n_in;
+    static const unsigned reuse_factor = 1;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_in, reuse_factor);
+    
     static const unsigned reuse_factor_rounded = reuse_factor + rf_pad;
     static const unsigned block_factor = DIV_ROUNDUP(n_in*n_out, reuse_factor);
     static const unsigned block_factor_rounded = block_factor + bf_pad;
@@ -1144,7 +1174,7 @@ struct config80 : nnet::conv1d_config {
     static const unsigned stride_width = 1;
     static const unsigned dilation = 1;
 
-    static const unsigned reuse_factor = 4;
+    static const unsigned reuse_factor = 1;
     static const unsigned parallelization_factor = 1;
     static const bool store_weights_in_bram = false;
 
@@ -1155,7 +1185,8 @@ struct config80 : nnet::conv1d_config {
     typedef w80_t weight_t;
     typedef config80_mult mult_config;
 
-    [[intel::fpga_memory, intel::numbanks(n_chan), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w80;
+    static constexpr unsigned num_banks = DIV_ROUNDUP(n_chan, reuse_factor);
+    [[intel::fpga_memory, intel::numbanks(num_banks), intel::bankwidth(sizeof(weight_t::value_type))]] static constexpr weight_t weights = w80;
     static constexpr bias_t biases = b80;
 };
 

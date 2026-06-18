@@ -152,6 +152,43 @@ Result:
     }
 }
 
+// NEEDS EDGE CASE HANDLING LIKE SAY RF = 5 
+template <class data_T, class res_T, typename CONFIG_T>
+void dense_rf_lt_conv(const data_T &data, res_T &res, const typename CONFIG_T::weight_t &weights,
+                 const typename CONFIG_T::bias_t &biases) {
+
+    assert((CONFIG_T::multiplier_limit % CONFIG_T::n_out == 0 || CONFIG_T::reuse_factor >= CONFIG_T::n_in) &&
+           "The current Reuse Factor is not allowed");
+
+    assert((CONFIG_T::multiplier_limit == CONFIG_T::block_factor) && "This function is correct only for RF <= N_IN");
+
+    [[intel::fpga_memory]] typename CONFIG_T::accum_t acc[CONFIG_T::n_out];
+
+    unsigned w_offset = 0;
+    unsigned data_offset = 0;
+    constexpr unsigned N_BANKS = CONFIG_T::n_in/CONFIG_T::reuse_factor;
+    [[intel::nofusion, intel::speculated_iterations(0)]] // each reuse loop is seperate
+    for (unsigned reuse_unit = 0; reuse_unit < CONFIG_T::reuse_factor; reuse_unit++) { 
+        data_offset = N_BANKS * reuse_unit;
+        for(unsigned el = 0; el < CONFIG_T::n_out; el++){
+            w_offset = N_BANKS * reuse_unit + CONFIG_T::n_in * el;
+            if(reuse_unit == 0) acc[el] = biases[el];
+            #pragma unroll
+            for(unsigned i = 0; i < N_BANKS; i++){
+                acc[el] += data[data_offset + i] * weights[w_offset + i];
+            } 
+        } 
+    }
+
+// Cast to "res_t" type
+Result:
+    #pragma unroll
+    for (int ires = 0; ires < CONFIG_T::n_out; ires++) {
+        res[ires] = cast<typename data_T::value_type, typename res_T::value_type, CONFIG_T>(acc[ires]);
+    }
+}
+
+/*
 template <class data_T, class res_T, typename CONFIG_T>
 void dense_rf_lt_conv(const data_T &data, res_T &res, const typename CONFIG_T::weight_t &weights,
                  const typename CONFIG_T::bias_t &biases) {
@@ -161,10 +198,10 @@ void dense_rf_lt_conv(const data_T &data, res_T &res, const typename CONFIG_T::w
 
     [[intel::fpga_register]] typename CONFIG_T::accum_t acc[CONFIG_T::n_out];
 InitAccum:
-    /*#pragma unroll
-    for (int iacc = 0; iacc < CONFIG_T::n_out; iacc++) {
-        acc[iacc] = (typename CONFIG_T::accum_t)biases[iacc];
-    }*/
+    //#pragma unroll
+    //for (int iacc = 0; iacc < CONFIG_T::n_out; iacc++) {
+    //    acc[iacc] = (typename CONFIG_T::accum_t)biases[iacc];
+    //}
 ReuseLoop:
     //[[intel::nofusion, intel::speculated_iterations(0)]] 
     for (int im = 0; im < CONFIG_T::block_factor; im++) {
@@ -182,6 +219,7 @@ Result:
         res[ires] = cast<typename data_T::value_type, typename res_T::value_type, CONFIG_T>(acc[ires]);
     }
 }
+*/
 
 template <class data_T, class res_T, typename CONFIG_T> void dense_resource(const data_T &data, res_T &res) {
     if (CONFIG_T::reuse_factor <= CONFIG_T::n_in) {
